@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { signUp, user, loading: authLoading } = useAuth();
+  const { signUp, user, loading: authLoading, loginDemo } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -210,13 +210,30 @@ export default function Register() {
             </GradientButton>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-gray-600 text-sm">
               Already have an account?{' '}
               <a href="#" className="text-iga-purple font-semibold hover:text-iga-magenta transition-colors">
                 Sign in
               </a>
             </p>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 glass text-gray-500">or</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                loginDemo();
+                navigate('/dashboard');
+              }}
+              className="w-full py-3 glass-strong rounded-xl hover:scale-105 transition-transform font-semibold text-gray-700"
+            >
+              🎮 Try Demo Mode
+            </button>
           </div>
         </GlassCard>
       </motion.div>

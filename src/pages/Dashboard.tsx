@@ -26,12 +26,50 @@ export default function Dashboard() {
     const fetchData = async () => {
       if (!user) return;
 
-      // Fetch upcoming events
-      const upcomingEvents = await eventService.getUpcomingEvents(3);
-      setEvents(upcomingEvents);
+      // Fetch real events from database (works for both demo and real users)
+      const upcomingEvents = await eventService.getUpcomingEvents(10);
 
-      // Update streak if needed
-      await userService.updateStreak(user.id);
+      // If no events in database, use demo events
+      if (upcomingEvents.length === 0) {
+        const now = new Date();
+        const demoEvents: Event[] = [
+          {
+            id: 'demo-event-1',
+            title: 'Leadership Workshop',
+            description: 'Learn essential leadership skills',
+            event_date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+            event_type: 'workshop',
+            location: 'Main Hall',
+            created_at: now.toISOString(),
+          },
+          {
+            id: 'demo-event-2',
+            title: 'Module Quiz Deadline',
+            description: 'Complete your entrepreneurship quiz',
+            event_date: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+            event_type: 'deadline',
+            location: 'Online',
+            created_at: now.toISOString(),
+          },
+          {
+            id: 'demo-event-3',
+            title: 'Community Meetup',
+            description: 'Monthly community gathering',
+            event_date: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+            event_type: 'event',
+            location: 'Community Center',
+            created_at: now.toISOString(),
+          },
+        ];
+        setEvents(demoEvents);
+      } else {
+        setEvents(upcomingEvents);
+      }
+
+      // Only update streak for real users
+      if (user.id !== 'demo-user-123') {
+        await userService.updateStreak(user.id);
+      }
     };
 
     fetchData();

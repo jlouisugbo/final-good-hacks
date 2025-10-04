@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signUp: (email: string, password: string, name: string, groupCode: string) => Promise<void>;
+  loginDemo: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -146,8 +147,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSupabaseUser(null);
   };
 
+  const loginDemo = () => {
+    const demoUser: User = {
+      id: 'demo-user-123',
+      email: 'demo@iga.com',
+      name: 'Demo User',
+      group_code: 'IGA2025',
+      total_xp: 1250,
+      current_level: 5,
+      current_streak: 7,
+      longest_streak: 14,
+      badges_earned: ['first-login', 'week-streak', 'module-master'],
+      completed_modules: ['intro-101', 'leadership-201', 'finance-101'],
+      modules_in_progress: ['entrepreneurship-301'],
+      show_on_leaderboard: true,
+      email_notifications: true,
+      created_at: new Date().toISOString(),
+      last_login: new Date().toISOString(),
+    };
+    setUser(demoUser);
+    setLoading(false);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, supabaseUser, loading, login, logout, signUp }}>
+    <AuthContext.Provider value={{ user, supabaseUser, loading, login, logout, signUp, loginDemo }}>
       {children}
     </AuthContext.Provider>
   );
