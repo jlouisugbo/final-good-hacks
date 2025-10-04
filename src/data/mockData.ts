@@ -1,0 +1,230 @@
+export const mockUser = {
+  name: 'Sarah',
+  email: 'sarah@example.com',
+  xp: 1250,
+  level: 3,
+  streak: 7,
+  longestStreak: 14,
+  modulesCompleted: 12,
+  totalModules: 48,
+  groupCode: 'NIA2024',
+  groupName: 'NIA Empowerment Squad',
+  memberSince: '2024-01-15',
+  showOnLeaderboard: true,
+  emailNotifications: true,
+  badges: [
+    { id: 1, name: 'First Steps', icon: '🎯', earned: true, date: '2024-01-16' },
+    { id: 2, name: 'Week Warrior', icon: '🔥', earned: true, date: '2024-01-23' },
+    { id: 3, name: 'Community Star', icon: '⭐', earned: true, date: '2024-02-01' },
+    { id: 4, name: 'Knowledge Seeker', icon: '📚', earned: true, date: '2024-02-10' },
+    { id: 5, name: 'Entrepreneur', icon: '💼', earned: false, date: null },
+    { id: 6, name: 'Code Master', icon: '💻', earned: false, date: null },
+    { id: 7, name: 'Leader', icon: '👑', earned: false, date: null },
+    { id: 8, name: 'Mentor', icon: '🤝', earned: false, date: null },
+  ],
+};
+
+export const programs = [
+  {
+    id: 1,
+    title: 'NIA Empowerment Academy',
+    description: 'Build confidence, leadership skills, and emotional intelligence',
+    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop',
+    progress: 45,
+    locked: false,
+    xp: 500,
+  },
+  {
+    id: 2,
+    title: 'UJIMA Business Program',
+    description: 'Learn entrepreneurship, financial literacy, and business fundamentals',
+    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop',
+    progress: 25,
+    locked: false,
+    xp: 750,
+  },
+  {
+    id: 3,
+    title: 'Kumbathon',
+    description: 'Participate in creative challenges and collaborative projects',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop',
+    progress: 0,
+    locked: true,
+    xp: 1000,
+  },
+  {
+    id: 4,
+    title: 'NIA Global Academy',
+    description: 'Explore global cultures, leadership, and community building',
+    image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop',
+    progress: 15,
+    locked: false,
+    xp: 600,
+  },
+];
+
+export const modules = [
+  {
+    id: 1,
+    title: 'Introduction to Self-Confidence',
+    description: 'Discover your inner strength and build unshakeable confidence',
+    category: 'Leadership',
+    xp: 50,
+    completed: true,
+    programId: 1,
+  },
+  {
+    id: 2,
+    title: 'Effective Communication',
+    description: 'Master the art of expressing yourself clearly and powerfully',
+    category: 'Leadership',
+    xp: 75,
+    completed: true,
+    programId: 1,
+  },
+  {
+    id: 3,
+    title: 'Goal Setting & Achievement',
+    description: 'Learn to set and accomplish your biggest dreams',
+    category: 'Leadership',
+    xp: 60,
+    completed: false,
+    programId: 1,
+  },
+  {
+    id: 4,
+    title: 'Financial Literacy Basics',
+    description: 'Understand money management and financial planning',
+    category: 'Entrepreneurship',
+    xp: 80,
+    completed: true,
+    programId: 2,
+  },
+  {
+    id: 5,
+    title: 'Starting Your First Business',
+    description: 'From idea to launch: your entrepreneurial journey begins',
+    category: 'Entrepreneurship',
+    xp: 100,
+    completed: false,
+    programId: 2,
+  },
+  {
+    id: 6,
+    title: 'HTML & CSS Fundamentals',
+    description: 'Build beautiful websites from scratch',
+    category: 'Coding 101',
+    xp: 90,
+    completed: false,
+    programId: null,
+  },
+  {
+    id: 7,
+    title: 'Introduction to Python',
+    description: 'Learn programming with the most beginner-friendly language',
+    category: 'Coding 101',
+    xp: 85,
+    completed: false,
+    programId: null,
+  },
+  {
+    id: 8,
+    title: 'STEM Career Exploration',
+    description: 'Discover exciting careers in science and technology',
+    category: 'STEM',
+    xp: 70,
+    completed: false,
+    programId: null,
+  },
+];
+
+export const events = [
+  {
+    id: 1,
+    title: 'Live Workshop: Public Speaking',
+    date: '2024-10-05T15:00:00',
+    type: 'workshop',
+    icon: '🎤',
+  },
+  {
+    id: 2,
+    title: 'Group Project Deadline',
+    date: '2024-10-07T23:59:00',
+    type: 'deadline',
+    icon: '📝',
+  },
+  {
+    id: 3,
+    title: 'Community Celebration',
+    date: '2024-10-10T18:00:00',
+    type: 'event',
+    icon: '🎉',
+  },
+];
+
+export const posts = [
+  {
+    id: 1,
+    userId: 'user2',
+    userName: 'Maya Johnson',
+    userAvatar: '👧🏾',
+    content: 'Just completed my first business plan! So proud of myself!',
+    timestamp: '2024-10-04T10:30:00',
+    reactions: {
+      'You go girl! 💪': 15,
+      'Congratulations! 🎉': 8,
+      'So proud! ❤️': 12,
+      'Keep it up! 🔥': 6,
+    },
+  },
+  {
+    id: 2,
+    userId: 'user3',
+    userName: 'Zara Williams',
+    userAvatar: '👧🏿',
+    content: 'Week 2 streak! The learning journey is amazing 🌟',
+    timestamp: '2024-10-04T09:15:00',
+    reactions: {
+      'You go girl! 💪': 10,
+      'Congratulations! 🎉': 5,
+      'So proud! ❤️': 7,
+      'Keep it up! 🔥': 9,
+    },
+  },
+  {
+    id: 3,
+    userId: 'user4',
+    userName: 'Aisha Brown',
+    userAvatar: '👧🏽',
+    content: 'Earned my Leadership badge today! Thank you to this amazing community ❤️',
+    timestamp: '2024-10-04T08:00:00',
+    reactions: {
+      'You go girl! 💪': 20,
+      'Congratulations! 🎉': 18,
+      'So proud! ❤️': 15,
+      'Keep it up! 🔥': 10,
+    },
+  },
+];
+
+export const leaderboardData = [
+  { groupName: 'NIA Empowerment Squad', xp: 4250, rank: 1, isUserGroup: true },
+  { groupName: 'UJIMA Champions', xp: 3890, rank: 2, isUserGroup: false },
+  { groupName: 'Kumbathon Creators', xp: 3650, rank: 3, isUserGroup: false },
+  { groupName: 'Global Leaders', xp: 3420, rank: 4, isUserGroup: false },
+  { groupName: 'Future Entrepreneurs', xp: 3100, rank: 5, isUserGroup: false },
+];
+
+export const aiSuggestedQuestions = [
+  'How do I build confidence?',
+  'What is financial literacy?',
+  'How do I start a business?',
+  'Tell me about the Nguzo Saba',
+];
+
+export const weeklyProgress = [
+  { week: 'Week 1', modules: 2 },
+  { week: 'Week 2', modules: 3 },
+  { week: 'Week 3', modules: 4 },
+  { week: 'Week 4', modules: 3 },
+];
