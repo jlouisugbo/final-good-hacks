@@ -4,25 +4,27 @@ import { Send, Smile } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { HARDCODED_COMMUNITY_POSTS, HARDCODED_LEADERBOARD, CommunityPost, LeaderboardUser } from '../data/hardcodedData';
 
 export default function Community() {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [newPost, setNewPost] = useState('');
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
 
   const reactionOptions = [
-    'You go girl! 💪',
-    'Congratulations! 🎉',
-    'So proud! ❤️',
-    'Keep it up! 🔥',
+    t('community.reaction1'),
+    t('community.reaction2'),
+    t('community.reaction3'),
+    t('community.reaction4'),
   ];
 
   const postTemplates = [
-    'I completed a module! 🎯',
-    'Earned a new badge! 🏆',
-    'Share a thought 💭',
+    t('community.template1'),
+    t('community.template2'),
+    t('community.template3'),
   ];
 
   useEffect(() => {
@@ -114,8 +116,8 @@ export default function Community() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Community</h1>
-          <p className="text-gray-600 text-lg">Celebrate wins and connect with your sisters</p>
+          <h1 className="text-4xl font-bold mb-2 gradient-text">{t('community.title')}</h1>
+          <p className="text-gray-600 text-lg">{t('community.subtitle')}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -126,7 +128,7 @@ export default function Community() {
               transition={{ delay: 0.1 }}
             >
               <GlassCard>
-                <h2 className="text-xl font-bold mb-4 gradient-text">Share Your Win!</h2>
+                <h2 className="text-xl font-bold mb-4 gradient-text">{t('community.shareWin')}</h2>
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {postTemplates.map((template) => (
@@ -144,7 +146,7 @@ export default function Community() {
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value.slice(0, 280))}
-                    placeholder="What's on your mind?"
+                    placeholder={t('community.whatsOnMind')}
                     className="w-full glass rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-400 transition-all outline-none text-gray-800 resize-none"
                     rows={3}
                   />
@@ -158,7 +160,7 @@ export default function Community() {
                     <GradientButton onClick={handleSubmitPost} className="py-2 px-6">
                       <div className="flex items-center space-x-2">
                         <Send size={16} />
-                        <span>Post</span>
+                        <span>{t('community.post')}</span>
                       </div>
                     </GradientButton>
                   </div>
@@ -224,7 +226,7 @@ export default function Community() {
           >
             <div className="sticky top-24">
               <GlassCard>
-                <h2 className="text-xl font-bold mb-6 gradient-text">Group Leaderboard</h2>
+                <h2 className="text-xl font-bold mb-6 gradient-text">{t('community.leaderboard')}</h2>
 
                 <div className="space-y-4">
                   {leaderboard.map((member, index) => (
@@ -253,7 +255,7 @@ export default function Community() {
                           <h3 className="font-bold truncate text-gray-800">
                             {member.name}
                           </h3>
-                          <p className="text-sm text-gray-600">{member.total_xp?.toLocaleString() || 0} XP</p>
+                          <p className="text-sm text-gray-600">{member.total_xp?.toLocaleString() || 0} {t('community.xp')}</p>
                         </div>
                       </div>
 
@@ -270,9 +272,9 @@ export default function Community() {
                 </div>
 
                 <div className="mt-6 glass-strong rounded-xl p-4 text-center">
-                  <p className="text-sm text-gray-600 mb-1">Your Group</p>
+                  <p className="text-sm text-gray-600 mb-1">{t('community.yourGroup')}</p>
                   <p className="text-xl font-bold gradient-text">{user.group_code}</p>
-                  <p className="text-sm text-gray-600 mt-1">Keep up the great work!</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('community.keepUpWork')}</p>
                 </div>
               </GlassCard>
             </div>

@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const demoUser: User = {
       id: `demo-${type}-123`,
       email: `demo.${type}@iga.com`,
-      name: type === 'student' ? 'Demo Student' : 'Demo Volunteer',
+      name: type === 'student' ? 'Makeba' : 'Demo Volunteer',
       group_code: 'IGA2025',
       total_xp: type === 'student' ? 1250 : 450,
       current_level: type === 'student' ? 5 : 2,

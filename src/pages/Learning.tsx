@@ -5,6 +5,7 @@ import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import ProgressBar from '../components/ProgressBar';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { HARDCODED_MODULES } from '../data/hardcodedData';
 import { Module } from '../types/database';
 
@@ -24,6 +25,7 @@ interface CategoryCard {
 
 export default function Learning() {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryCard | null>(null);
   const [modules, setModules] = useState<ModuleWithProgress[]>([]);
@@ -183,8 +185,8 @@ export default function Learning() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Your Learning Path</h1>
-          <p className="text-gray-600 text-lg">Continue your journey to greatness</p>
+          <h1 className="text-4xl font-bold mb-2 gradient-text">{t('learning.title')}</h1>
+          <p className="text-gray-600 text-lg">{t('learning.subtitle')}</p>
         </motion.div>
 
 
@@ -195,7 +197,7 @@ export default function Learning() {
           transition={{ delay: 0.1 }}
           className="mb-12"
         >
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Main Programs</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('learning.mainPrograms')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {mainCategories.map((category, index) => {
               const Icon = category.icon;
@@ -213,7 +215,7 @@ export default function Learning() {
                     {category.isLocked && (
                       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl">
                         <Lock className="text-white mb-2" size={40} />
-                        <p className="text-white font-bold text-sm text-center px-4">Complete required modules first</p>
+                        <p className="text-white font-bold text-sm text-center px-4">{t('learning.locked')}</p>
                       </div>
                     )}
 
@@ -238,7 +240,7 @@ export default function Learning() {
                       {/* Progress Bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-700">Progress</span>
+                          <span className="text-xs font-medium text-gray-700">{t('learning.progress')}</span>
                           <span className="text-xs font-bold gradient-text">{category.progress}%</span>
                         </div>
                         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -251,7 +253,7 @@ export default function Learning() {
 
                       {/* Module Count */}
                       <div className="text-sm text-gray-600">
-                        {category.moduleCount} modules
+                        {category.moduleCount} {t('dashboard.modules')}
                       </div>
                     </div>
                   </GlassCard>
@@ -267,7 +269,7 @@ export default function Learning() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Additional Learning Modules</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">{t('learning.additionalModules')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {additionalCategories.map((category, index) => {
               const Icon = category.icon;
@@ -300,7 +302,7 @@ export default function Learning() {
                       {/* Progress Bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-700">Progress</span>
+                          <span className="text-xs font-medium text-gray-700">{t('learning.progress')}</span>
                           <span className="text-xs font-bold gradient-text">{category.progress}%</span>
                         </div>
                         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -313,7 +315,7 @@ export default function Learning() {
 
                       {/* Module Count */}
                       <div className="text-sm text-gray-600">
-                        {category.moduleCount} modules
+                        {category.moduleCount} {t('dashboard.modules')}
                       </div>
                     </div>
                   </GlassCard>
@@ -393,11 +395,11 @@ export default function Learning() {
 
                 <div className="flex items-center space-x-4">
                   <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-4 text-center border border-gray-200">
-                    <p className="text-sm text-gray-600 mb-1">Estimated Time</p>
-                    <p className="text-xl font-bold gradient-text">{selectedModuleData.estimated_time || 45} min</p>
+                    <p className="text-sm text-gray-600 mb-1">{t('learning.estimatedTime')}</p>
+                    <p className="text-xl font-bold gradient-text">{selectedModuleData.estimated_time || 45} {t('learning.min')}</p>
                   </div>
                   <div className="flex-1 bg-white/80 backdrop-blur-sm rounded-xl p-4 text-center border border-gray-200">
-                    <p className="text-sm text-gray-600 mb-1">Earn</p>
+                    <p className="text-sm text-gray-600 mb-1">{t('learning.earn')}</p>
                     <p className="text-xl font-bold gradient-text">{selectedModuleData.xp_reward} XP</p>
                   </div>
                 </div>
@@ -406,8 +408,8 @@ export default function Learning() {
               {selectedModuleData.completed ? (
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center border border-gray-200">
                   <CheckCircle className="text-green-500 mx-auto mb-2" size={48} />
-                  <p className="font-bold text-lg text-gray-800">Module Completed!</p>
-                  <p className="text-gray-600">Great job on finishing this module</p>
+                  <p className="font-bold text-lg text-gray-800">{t('learning.moduleCompleted')}</p>
+                  <p className="text-gray-600">{t('learning.greatJob')}</p>
                 </div>
               ) : (
                 <GradientButton
@@ -415,7 +417,7 @@ export default function Learning() {
                   className="py-4 text-lg"
                   onClick={() => handleCompleteModule(selectedModuleData.id)}
                 >
-                  Complete Module & Earn {selectedModuleData.xp_reward} XP
+                  {t('learning.completeModule')} {selectedModuleData.xp_reward} XP
                 </GradientButton>
               )}
             </div>
@@ -465,8 +467,8 @@ export default function Learning() {
                 {/* Progress Overview */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                    <span className="text-sm font-bold gradient-text">{selectedCategory.progress}% Complete</span>
+                    <span className="text-sm font-medium text-gray-700">{t('learning.overallProgress')}</span>
+                    <span className="text-sm font-bold gradient-text">{selectedCategory.progress}% {t('learning.complete')}</span>
                   </div>
                   <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                     <div
@@ -475,8 +477,8 @@ export default function Learning() {
                     ></div>
                   </div>
                   <div className="flex items-center justify-between mt-2 text-sm text-gray-600">
-                    <span>{Math.round((selectedCategory.progress / 100) * getCategoryModules(selectedCategory.name).length)} of {getCategoryModules(selectedCategory.name).length} modules completed</span>
-                    <span>{selectedCategory.progress}% to unlock next level</span>
+                    <span>{Math.round((selectedCategory.progress / 100) * getCategoryModules(selectedCategory.name).length)} of {getCategoryModules(selectedCategory.name).length} {t('learning.modulesCompleted')}</span>
+                    <span>{selectedCategory.progress}% {t('learning.toUnlock')}</span>
                   </div>
                 </div>
               </div>
@@ -512,7 +514,7 @@ export default function Learning() {
                               <h3 className="text-lg font-bold text-gray-800">{module.title}</h3>
                               {module.completed && (
                                 <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                                  Completed
+                                  {t('learning.completed')}
                                 </span>
                               )}
                             </div>
@@ -521,7 +523,7 @@ export default function Learning() {
                             <div className="flex items-center space-x-4 text-xs text-gray-500">
                               <span className="flex items-center space-x-1">
                                 <Play size={14} />
-                                <span>{module.estimated_time} min</span>
+                                <span>{module.estimated_time} {t('learning.min')}</span>
                               </span>
                               <span className="flex items-center space-x-1">
                                 <Trophy size={14} />
@@ -539,7 +541,7 @@ export default function Learning() {
                               onClick={() => setSelectedModule(module.id)}
                               className="px-4 py-2 rounded-lg gradient-button text-white font-medium hover:scale-105 transition-transform"
                             >
-                              {module.completed ? 'Review' : 'Start'}
+                              {module.completed ? t('learning.review') : t('learning.start')}
                             </button>
                           </div>
                         </div>
@@ -561,7 +563,7 @@ export default function Learning() {
                             </div>
                             <p className="text-sm text-gray-600 mt-2 flex items-center space-x-1">
                               <Play size={14} />
-                              <span>Watch this video to complete the module</span>
+                              <span>{t('learning.watchVideo')}</span>
                             </p>
                           </div>
                         )}

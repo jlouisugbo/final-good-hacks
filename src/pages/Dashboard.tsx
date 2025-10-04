@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, BookOpen, Calendar as CalendarIcon, TrendingUp, Target, Award, Clock, Star, Users } from 'lucide-react';
+import { Trophy, Flame, BookOpen, Calendar as CalendarIcon, TrendingUp, Target, Award, Clock, Star, Users, X, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import GlassCard from '../components/GlassCard';
 import StatCard from '../components/StatCard';
 import ProgressBar from '../components/ProgressBar';
 import Calendar from '../components/Calendar';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { HARDCODED_EVENTS } from '../data/hardcodedData';
 import { Event } from '../types/database';
 
@@ -18,18 +20,80 @@ const weeklyProgress = [
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showSisterTalk, setShowSisterTalk] = useState(false);
   const [showSisterTalkNotification, setShowSisterTalkNotification] = useState(false);
+  const [showWelcomeVideo, setShowWelcomeVideo] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
 
   useEffect(() => {
     if (!user) return;
 
     // Use hardcoded events data - no database needed!
     setEvents(HARDCODED_EVENTS);
+
+    // Show welcome video for demo users (only once per session)
+    if (user.id.startsWith('demo-')) {
+      const hasSeenVideo = sessionStorage.getItem('iga-welcome-video-seen');
+      if (!hasSeenVideo) {
+        setShowWelcomeVideo(true);
+      }
+    }
   }, [user]);
+
+  // Tour steps definition
+  const tourSteps = [
+    {
+      path: '/dashboard',
+      title: 'Welcome to Your Dashboard!',
+      description: 'This is your personal dashboard where you can track your progress, XP, streaks, and upcoming events.'
+    },
+    {
+      path: '/learning',
+      title: 'Learning Modules',
+      description: 'Explore our learning programs including NIA Empowerment Academy, UJIMA Business Program, and more!'
+    },
+    {
+      path: '/community',
+      title: 'Community',
+      description: 'Connect with other students, share your achievements, and participate in discussions.'
+    },
+    {
+      path: '/resources',
+      title: 'Resources',
+      description: 'Find local IGA chapters, online communities, and helpful resources near you.'
+    },
+    {
+      path: '/profile',
+      title: 'Your Profile',
+      description: 'Manage your account settings, view your badges, and track your achievements.'
+    }
+  ];
+
+  const handleCloseVideo = () => {
+    setShowWelcomeVideo(false);
+    sessionStorage.setItem('iga-welcome-video-seen', 'true');
+    // Start tour after video closes
+    setShowTour(true);
+    setTourStep(0);
+  };
+
+  const handleTourNext = () => {
+    if (tourStep < tourSteps.length - 1) {
+      const nextStep = tourStep + 1;
+      setTourStep(nextStep);
+      navigate(tourSteps[nextStep].path);
+    } else {
+      // Tour complete, go back to dashboard
+      setShowTour(false);
+      navigate('/dashboard');
+    }
+  };
 
   // Show Sister Talk notification after 5 seconds
   useEffect(() => {
@@ -89,9 +153,9 @@ export default function Dashboard() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold mb-2">
-            Welcome back, <span className="gradient-text">{user.name}</span>!
+            {t('dashboard.welcome')}, <span className="gradient-text">{user.name}</span>!
           </h1>
-          <p className="text-gray-600 text-lg">Ready to continue your learning journey?</p>
+          <p className="text-gray-600 text-lg">{t('dashboard.subtitle')}</p>
         </motion.div>
 
         {/* First Row: Stats + Calendar */}
@@ -103,10 +167,10 @@ export default function Dashboard() {
           >
             <GlassCard className="h-full">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold gradient-text">Your Stats</h2>
+                <h2 className="text-lg font-bold gradient-text">{t('dashboard.yourStats')}</h2>
                 <div className="flex items-center space-x-1">
                   <Star className="text-yellow-500 fill-yellow-500" size={16} />
-                  <span className="text-sm font-bold text-gray-700">Level {user.current_level}</span>
+                  <span className="text-sm font-bold text-gray-700">{t('dashboard.level')} {user.current_level}</span>
                 </div>
               </div>
 
@@ -119,21 +183,21 @@ export default function Dashboard() {
                         <Trophy className="text-white" size={16} />
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-700">Experience Points</p>
+                        <p className="text-xs font-medium text-gray-700">{t('dashboard.experiencePoints')}</p>
                         <p className="text-xl font-bold gradient-text">{user.total_xp} XP</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-500">Next Level</p>
+                      <p className="text-xs text-gray-500">{t('dashboard.nextLevel')}</p>
                       <p className="text-sm font-bold text-iga-purple">{500 - (user.total_xp % 500)} XP</p>
                     </div>
                   </div>
                   <div className="relative">
                     <ProgressBar progress={(user.total_xp % 500) / 5} showLabel />
                     <div className="flex justify-between mt-1">
-                      <span className="text-xs text-gray-500">Lvl {user.current_level}</span>
+                      <span className="text-xs text-gray-500">{t('dashboard.lvl')} {user.current_level}</span>
                       <span className="text-xs font-medium gradient-text">{Math.round((user.total_xp % 500) / 5)}%</span>
-                      <span className="text-xs text-gray-500">Lvl {user.current_level + 1}</span>
+                      <span className="text-xs text-gray-500">{t('dashboard.lvl')} {user.current_level + 1}</span>
                     </div>
                   </div>
                 </div>
@@ -146,7 +210,7 @@ export default function Dashboard() {
                       <Flame className="text-white" size={16} />
                     </div>
                     <p className="text-2xl font-bold gradient-text">{user.current_streak}</p>
-                    <p className="text-xs text-gray-600">Day Streak</p>
+                    <p className="text-xs text-gray-600">{t('dashboard.dayStreak')}</p>
                     <div className="mt-2 flex items-center space-x-1">
                       <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
                         <div
@@ -163,7 +227,7 @@ export default function Dashboard() {
                       <Award className="text-white" size={16} />
                     </div>
                     <p className="text-2xl font-bold gradient-text">{user.badges_earned.length}</p>
-                    <p className="text-xs text-gray-600">Badges</p>
+                    <p className="text-xs text-gray-600">{t('dashboard.badges')}</p>
                     <div className="mt-2 flex -space-x-1">
                       {['🎯', '🔥', '⭐', '📚', '💼'].slice(0, 3).map((emoji, i) => (
                         <div key={i} className="w-5 h-5 rounded-full bg-white border-2 border-purple-200 flex items-center justify-center text-xs">
@@ -184,8 +248,8 @@ export default function Dashboard() {
                       <Clock className="text-white" size={16} />
                     </div>
                     <p className="text-2xl font-bold gradient-text">{user.completed_modules.length * 25}m</p>
-                    <p className="text-xs text-gray-600">Study Time</p>
-                    <p className="text-xs text-green-600 font-medium mt-2">↑ 15% this week</p>
+                    <p className="text-xs text-gray-600">{t('dashboard.studyTime')}</p>
+                    <p className="text-xs text-green-600 font-medium mt-2">{t('dashboard.thisWeekUp')}</p>
                   </div>
                 </div>
 
@@ -198,7 +262,7 @@ export default function Dashboard() {
                           <Target className="text-white" size={16} />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-gray-700">Progress</p>
+                          <p className="text-xs font-medium text-gray-700">{t('dashboard.progress')}</p>
                           <p className="text-sm font-bold gradient-text">{user.completed_modules.length}/{totalModules}</p>
                         </div>
                       </div>
@@ -246,10 +310,10 @@ export default function Dashboard() {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
                         <Users className="text-white" size={16} />
                       </div>
-                      <p className="text-xs font-medium text-gray-700">Your Group</p>
+                      <p className="text-xs font-medium text-gray-700">{t('dashboard.yourGroup')}</p>
                     </div>
                     <p className="text-xl font-bold gradient-text">{user.group_code}</p>
-                    <p className="text-xs text-gray-600 mt-1">🏆 Top 10 nationwide</p>
+                    <p className="text-xs text-gray-600 mt-1">🏆 {t('dashboard.topNationwide')}</p>
                   </div>
                 </div>
               </div>
@@ -264,7 +328,7 @@ export default function Dashboard() {
             <GlassCard className="h-full">
               <div className="flex items-center space-x-2 mb-3">
                 <CalendarIcon className="text-iga-purple" size={20} />
-                <h2 className="text-lg font-bold gradient-text">Calendar</h2>
+                <h2 className="text-lg font-bold gradient-text">{t('dashboard.calendar')}</h2>
               </div>
               <div className="scale-90 -mt-2">
                 <Calendar
@@ -290,18 +354,18 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="text-iga-purple" size={24} />
-                  <h2 className="text-xl font-bold gradient-text">Performance Analytics</h2>
+                  <h2 className="text-xl font-bold gradient-text">{t('dashboard.analytics')}</h2>
                 </div>
-                <div className="text-xs text-gray-500">Last 30 days</div>
+                <div className="text-xs text-gray-500">{t('dashboard.lastDays')}</div>
               </div>
 
               <div className="space-y-6">
                 {/* Weekly Progress Chart */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-700">Weekly Module Completion</h3>
+                    <h3 className="text-sm font-semibold text-gray-700">{t('dashboard.weeklyCompletion')}</h3>
                     <span className="text-xs px-2 py-1 rounded-full glass-strong text-iga-purple font-medium">
-                      +{weeklyProgress.reduce((sum, w) => sum + w.modules, 0)} this month
+                      +{weeklyProgress.reduce((sum, w) => sum + w.modules, 0)} {t('dashboard.thisMonth')}
                     </span>
                   </div>
                   <div className="glass-strong rounded-xl p-4">
@@ -315,7 +379,7 @@ export default function Dashboard() {
                               {/* Tooltip */}
                               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-xl">
-                                  <p className="font-bold">{week.modules} modules</p>
+                                  <p className="font-bold">{week.modules} {t('dashboard.modulesCount')}</p>
                                   <p className="text-gray-300">{week.week}</p>
                                 </div>
                               </div>
@@ -348,7 +412,7 @@ export default function Dashboard() {
                             </div>
                             <div className="mt-3 text-center">
                               <p className="text-lg font-bold gradient-text">{week.modules}</p>
-                              <p className="text-xs text-gray-500 mt-1">{week.week.replace('Week ', 'W')}</p>
+                              <p className="text-xs text-gray-500 mt-1">{week.week.replace(t('dashboard.week') + ' ', 'W')}</p>
                             </div>
                           </div>
                         );
@@ -364,7 +428,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
                         <Flame className="text-white" size={16} />
                       </div>
-                      <h3 className="text-xs font-medium text-gray-700">Streak</h3>
+                      <h3 className="text-xs font-medium text-gray-700">{t('dashboard.streak')}</h3>
                     </div>
                     <div className="grid grid-cols-7 gap-1 mb-2">
                       {[...Array(7)].map((_, index) => (
@@ -379,7 +443,7 @@ export default function Dashboard() {
                         ></div>
                       ))}
                     </div>
-                    <p className="text-xl font-bold gradient-text">{user.current_streak} days</p>
+                    <p className="text-xl font-bold gradient-text">{user.current_streak} {t('dashboard.days')}</p>
                   </div>
 
                   <div className="glass-strong rounded-xl p-4 hover:scale-105 transition-transform">
@@ -387,7 +451,7 @@ export default function Dashboard() {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center">
                         <Trophy className="text-white" size={16} />
                       </div>
-                      <h3 className="text-xs font-medium text-gray-700">Badges</h3>
+                      <h3 className="text-xs font-medium text-gray-700">{t('dashboard.badges')}</h3>
                     </div>
                     <div className="flex items-baseline space-x-1 mb-2">
                       <span className="text-3xl font-bold gradient-text">{user.badges_earned.length}</span>
@@ -406,13 +470,13 @@ export default function Dashboard() {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                         <Target className="text-white" size={16} />
                       </div>
-                      <h3 className="text-xs font-medium text-gray-700">Rank</h3>
+                      <h3 className="text-xs font-medium text-gray-700">{t('dashboard.rank')}</h3>
                     </div>
                     <div className="flex items-baseline space-x-1 mb-2">
                       <span className="text-3xl font-bold gradient-text">#{Math.floor(Math.random() * 10) + 1}</span>
-                      <span className="text-gray-500 text-xs">in group</span>
+                      <span className="text-gray-500 text-xs">{t('dashboard.inGroup')}</span>
                     </div>
-                    <p className="text-xs text-green-600 font-medium">↑ 2 spots this week</p>
+                    <p className="text-xs text-green-600 font-medium">↑ 2 {t('dashboard.spotsThisWeek')}</p>
                   </div>
                 </div>
               </div>
@@ -427,12 +491,12 @@ export default function Dashboard() {
             <GlassCard className="h-full">
               <div className="flex items-center space-x-2 mb-4">
                 <CalendarIcon className="text-iga-purple" size={24} />
-                <h2 className="text-xl font-bold gradient-text">Upcoming Events</h2>
+                <h2 className="text-xl font-bold gradient-text">{t('dashboard.upcomingEvents')}</h2>
               </div>
 
               <div className="space-y-3">
                 {events.length === 0 ? (
-                  <p className="text-center text-gray-600 py-8">No upcoming events</p>
+                  <p className="text-center text-gray-600 py-8">{t('dashboard.noEvents')}</p>
                 ) : (
                   (showAllEvents ? events : events.slice(0, 4)).map((event) => (
                     <div key={event.id} className="glass-strong rounded-xl p-3 hover:scale-105 transition-transform">
@@ -462,7 +526,7 @@ export default function Dashboard() {
                     onClick={() => setShowAllEvents(!showAllEvents)}
                     className="w-full text-center text-iga-purple font-semibold hover:text-iga-magenta transition-colors mt-2"
                   >
-                    {showAllEvents ? 'Show Less' : `View All Events (${events.length})`}
+                    {showAllEvents ? t('dashboard.showLess') : `${t('dashboard.viewAllEvents')} (${events.length})`}
                   </button>
                 )}
               </div>
@@ -477,12 +541,12 @@ export default function Dashboard() {
           transition={{ delay: 0.5 }}
         >
           <GlassCard>
-            <h2 className="text-xl font-bold mb-4 gradient-text">Quick Actions</h2>
+            <h2 className="text-xl font-bold mb-4 gradient-text">{t('dashboard.quickActions')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard icon={BookOpen} label="Continue Learning" value="3 modules" gradient="from-blue-500 to-purple-500" />
-              <StatCard icon={Target} label="Daily Goal" value="2/3" subValue="Complete 1 more" gradient="from-purple-500 to-fuchsia-500" />
-              <StatCard icon={Trophy} label="Next Badge" value="75%" subValue="Entrepreneur" gradient="from-fuchsia-500 to-pink-400" />
-              <StatCard icon={Flame} label="Streak Goal" value={`${user.longest_streak} days`} subValue={`${user.longest_streak - user.current_streak} more to beat record`} gradient="from-orange-400 to-red-500" />
+              <StatCard icon={BookOpen} label={t('dashboard.continueLearning')} value={`3 ${t('dashboard.modules')}`} gradient="from-blue-500 to-purple-500" />
+              <StatCard icon={Target} label={t('dashboard.dailyGoal')} value="2/3" subValue={t('dashboard.completeMore')} gradient="from-purple-500 to-fuchsia-500" />
+              <StatCard icon={Trophy} label={t('dashboard.nextBadge')} value="75%" subValue={t('dashboard.entrepreneur')} gradient="from-fuchsia-500 to-pink-400" />
+              <StatCard icon={Flame} label={t('dashboard.streakGoal')} value={`${user.longest_streak} ${t('dashboard.days')}`} subValue={`${user.longest_streak - user.current_streak} ${t('dashboard.moreToBeat')}`} gradient="from-orange-400 to-red-500" />
             </div>
           </GlassCard>
         </motion.div>
@@ -605,6 +669,93 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
+        </motion.div>
+      )}
+
+      {/* Welcome Video Modal */}
+      {showWelcomeVideo && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 px-4 py-8"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', duration: 0.5 }}
+            className="w-full max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 relative p-6">
+              <button
+                onClick={handleCloseVideo}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 border border-gray-300 flex items-center justify-center hover:scale-110 transition-transform shadow-lg z-10"
+              >
+                <X size={24} className="text-gray-700" />
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-2xl">IGA</span>
+                </div>
+                <h2 className="text-3xl font-bold mb-2 gradient-text">Welcome to IGA!</h2>
+                <p className="text-gray-700 text-lg">Learn more about our mission and community</p>
+              </div>
+
+              <div className="aspect-video rounded-xl overflow-hidden bg-black mb-4">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/Xr117r9anUk"
+                  title="Welcome to IGA"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+
+              <button
+                onClick={handleCloseVideo}
+                className="w-full py-3 px-6 rounded-xl gradient-button text-white font-semibold hover:scale-105 transition-transform"
+              >
+                Let's Get Started!
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Tour Overlay */}
+      {showTour && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 px-4 py-8"
+        >
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="w-full max-w-lg"
+          >
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 relative p-6">
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-lg">{tourStep + 1}/5</span>
+                </div>
+                <h2 className="text-2xl font-bold mb-2 gradient-text">{tourSteps[tourStep].title}</h2>
+                <p className="text-gray-700">{tourSteps[tourStep].description}</p>
+              </div>
+
+              <button
+                onClick={handleTourNext}
+                className="w-full py-3 px-6 rounded-xl gradient-button text-white font-semibold hover:scale-105 transition-transform flex items-center justify-center space-x-2"
+              >
+                <span>{tourStep === tourSteps.length - 1 ? 'Finish Tour' : 'Next'}</span>
+                <ArrowRight size={20} />
+              </button>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </div>

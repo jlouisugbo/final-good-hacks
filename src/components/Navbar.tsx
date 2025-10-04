@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Users, User, Menu, X, Heart } from 'lucide-react';
+import { Home, BookOpen, Users, User, Menu, X, Heart, Globe } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface NavbarProps {
   user?: {
     name: string;
-    level: number;
+    current_level: number;
     avatar?: string;
   };
   userType?: 'student' | 'volunteer' | null;
@@ -14,13 +15,14 @@ interface NavbarProps {
 export default function Navbar({ user, userType }: NavbarProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, toggleLanguage, t } = useLanguage();
 
   const allNavItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: Home, allowedFor: ['student', 'volunteer'] },
-    { name: 'Learning', path: '/learning', icon: BookOpen, allowedFor: ['student'] },
-    { name: 'Community', path: '/community', icon: Users, allowedFor: ['student'] },
-    { name: 'Resources', path: '/resources', icon: Heart, allowedFor: ['student'] },
-    { name: 'Profile', path: '/profile', icon: User, allowedFor: ['student'] },
+    { name: t('nav.dashboard'), path: '/dashboard', icon: Home, allowedFor: ['student', 'volunteer'] },
+    { name: t('nav.learning'), path: '/learning', icon: BookOpen, allowedFor: ['student'] },
+    { name: t('nav.community'), path: '/community', icon: Users, allowedFor: ['student'] },
+    { name: t('nav.resources'), path: '/resources', icon: Heart, allowedFor: ['student'] },
+    { name: t('nav.profile'), path: '/profile', icon: User, allowedFor: ['student'] },
   ];
 
   const navItems = user
@@ -67,9 +69,17 @@ export default function Navbar({ user, userType }: NavbarProps) {
               </div>
 
               <div className="hidden md:flex items-center space-x-3">
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg glass-strong hover:scale-105 transition-all"
+                  title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
+                >
+                  <Globe size={18} className="text-iga-purple" />
+                  <span className="font-medium text-gray-700">{language === 'en' ? 'ES' : 'EN'}</span>
+                </button>
                 <div className="text-right">
                   <p className="font-semibold text-gray-800">{user.name}</p>
-                  <p className="text-xs text-gray-600">Level {user.level}</p>
+                  <p className="text-xs text-gray-600">{t('nav.level')} {user.current_level}</p>
                 </div>
                 <img
                   src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=girl&gender=female"}
@@ -88,9 +98,19 @@ export default function Navbar({ user, userType }: NavbarProps) {
           )}
 
           {!user && (
-            <Link to="/register">
-              <GradientButton>Join Now</GradientButton>
-            </Link>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center space-x-1 px-2 py-1 rounded-lg glass-strong hover:scale-105 transition-all"
+                title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
+              >
+                <Globe size={16} className="text-iga-purple" />
+                <span className="text-sm font-medium text-gray-700">{language === 'en' ? 'ES' : 'EN'}</span>
+              </button>
+              <Link to="/register">
+                <GradientButton>{t('nav.joinNow')}</GradientButton>
+              </Link>
+            </div>
           )}
         </div>
       </div>
@@ -116,6 +136,13 @@ export default function Navbar({ user, userType }: NavbarProps) {
                 </Link>
               );
             })}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-white/20 transition-all w-full"
+            >
+              <Globe size={20} />
+              <span className="font-medium">{language === 'en' ? 'Español' : 'English'}</span>
+            </button>
           </div>
         </div>
       )}
