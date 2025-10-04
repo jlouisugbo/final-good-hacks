@@ -10,7 +10,7 @@ export default {
         'iga-blue': '#3B82F6',
       },
       fontFamily: {
-        'sans': ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
+        'sans': ['Raleway', 'system-ui', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

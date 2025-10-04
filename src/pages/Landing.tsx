@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Users, Award, Heart, BookOpen, Briefcase, Trophy, Globe } from 'lucide-react';
+import { Sparkles, Award, Heart, Briefcase, Trophy, Globe } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 

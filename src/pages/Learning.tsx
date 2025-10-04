@@ -1,22 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Play, CheckCircle, X } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import ProgressBar from '../components/ProgressBar';
-import { programs, modules } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import { moduleService } from '../services/moduleService';
+import { userService } from '../services/userService';
+import { Module } from '../types/database';
+
+interface ModuleWithProgress extends Module {
+  completed: boolean;
+}
 
 export default function Learning() {
-  const [selectedModule, setSelectedModule] = useState<number | null>(null);
+  const { user, loading } = useAuth();
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [modules, setModules] = useState<ModuleWithProgress[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
-  const categories = ['Leadership', 'Entrepreneurship', 'Coding 101', 'STEM'];
+  useEffect(() => {
+    const fetchModules = async () => {
+      if (!user) return;
+
+      const allModules = await moduleService.getAllModules();
+      const modulesWithProgress = allModules.map(module => ({
+        ...module,
+        completed: user.completed_modules.includes(module.id)
+      }));
+
+      setModules(modulesWithProgress);
+
+      // Get unique categories
+      const uniqueCategories = [...new Set(allModules.map(m => m.category))];
+      setCategories(uniqueCategories);
+    };
+
+    fetchModules();
+  }, [user]);
 
   const getModulesByCategory = (category: string) => {
-    return modules.filter(m => m.category === category && !m.programId);
+    return modules.filter(m => m.category === category);
   };
 
   const selectedModuleData = selectedModule ? modules.find(m => m.id === selectedModule) : null;
+
+  const handleCompleteModule = async (moduleId: string) => {
+    if (!user) return;
+
+    const module = modules.find(m => m.id === moduleId);
+    if (!module || module.completed) return;
+
+    try {
+      await userService.completeModule(user.id, moduleId, module.xp_reward);
+
+      // Update local state
+      setModules(modules.map(m =>
+        m.id === moduleId ? { ...m, completed: true } : m
+      ));
+      setSelectedModule(null);
+    } catch (error) {
+      console.error('Error completing module:', error);
+    }
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen gradient-bg pt-20 px-4 sm:px-6 lg:px-8 pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-white font-bold text-2xl">IGA</span>
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-bg pt-20 px-4 sm:px-6 lg:px-8 pb-12">
@@ -30,71 +90,13 @@ export default function Learning() {
           <p className="text-gray-600 text-lg">Continue your journey to greatness</p>
         </motion.div>
 
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-12"
         >
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Main Programs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {programs.map((program, index) => (
-              <motion.div
-                key={program.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + index * 0.1 }}
-              >
-                <GlassCard hover className="group relative overflow-hidden">
-                  <div className="relative h-48 rounded-xl overflow-hidden mb-4">
-                    <img
-                      src={program.image}
-                      alt={program.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    {program.locked && (
-                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                        <Lock className="text-white" size={48} />
-                      </div>
-                    )}
-                  </div>
-
-                  <h3 className="text-2xl font-bold mb-2 text-gray-800">{program.title}</h3>
-                  <p className="text-gray-600 mb-4">{program.description}</p>
-
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Progress</span>
-                      <span className="text-sm font-medium gradient-text">{program.xp} XP</span>
-                    </div>
-                    <ProgressBar progress={program.progress} showLabel />
-                  </div>
-
-                  {!program.locked ? (
-                    <GradientButton fullWidth>
-                      <div className="flex items-center justify-center space-x-2">
-                        <Play size={20} />
-                        <span>Continue Learning</span>
-                      </div>
-                    </GradientButton>
-                  ) : (
-                    <div className="glass-strong rounded-xl p-3 text-center">
-                      <p className="text-sm text-gray-600">Complete previous programs to unlock</p>
-                    </div>
-                  )}
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Supplemental Library</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">Learning Modules</h2>
           <div className="space-y-4">
             {categories.map((category, index) => {
               const categoryModules = getModulesByCategory(category);
@@ -244,11 +246,11 @@ export default function Learning() {
                 <div className="flex items-center space-x-4">
                   <div className="flex-1 glass-strong rounded-xl p-4 text-center">
                     <p className="text-sm text-gray-600 mb-1">Estimated Time</p>
-                    <p className="text-xl font-bold gradient-text">45 minutes</p>
+                    <p className="text-xl font-bold gradient-text">{selectedModuleData.estimated_time || 45} min</p>
                   </div>
                   <div className="flex-1 glass-strong rounded-xl p-4 text-center">
                     <p className="text-sm text-gray-600 mb-1">Earn</p>
-                    <p className="text-xl font-bold gradient-text">{selectedModuleData.xp} XP</p>
+                    <p className="text-xl font-bold gradient-text">{selectedModuleData.xp_reward} XP</p>
                   </div>
                 </div>
               </div>
@@ -260,8 +262,12 @@ export default function Learning() {
                   <p className="text-gray-600">Great job on finishing this module</p>
                 </div>
               ) : (
-                <GradientButton fullWidth className="py-4 text-lg">
-                  Start Learning
+                <GradientButton
+                  fullWidth
+                  className="py-4 text-lg"
+                  onClick={() => handleCompleteModule(selectedModuleData.id)}
+                >
+                  Complete Module & Earn {selectedModuleData.xp_reward} XP
                 </GradientButton>
               )}
             </GlassCard>

@@ -34,7 +34,7 @@ export default function Navbar({ user }: NavbarProps) {
               <span className="text-white font-bold text-xl">IGA</span>
             </div>
             <span className="font-bold text-xl gradient-text hidden sm:block">
-              Girls Academy
+              International Girls Academy
             </span>
           </Link>
 
@@ -65,7 +65,11 @@ export default function Navbar({ user }: NavbarProps) {
                   <p className="font-semibold text-gray-800">{user.name}</p>
                   <p className="text-xs text-gray-600">Level {user.level}</p>
                 </div>
-                <div className="w-10 h-10 rounded-full gradient-primary border-2 border-white shadow-lg"></div>
+                <img
+                  src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=girl&gender=female"}
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full border-2 border-white shadow-lg object-cover"
+                />
               </div>
 
               <button

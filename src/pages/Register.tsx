@@ -8,22 +8,70 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     ageGroup: '',
     accessCode: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setShowSuccess(true);
-    setTimeout(() => {
-      login();
-      navigate('/dashboard');
-    }, 2000);
+    setError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await signUp(formData.email, formData.password, formData.name, formData.accessCode);
+
+      // Show success message
+      setShowSuccess(true);
+
+      // Redirect after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+    } catch (err: any) {
+      console.error('Signup error:', err);
+
+      // Provide helpful error messages
+      let errorMessage = err.message || 'Failed to create account. Please try again.';
+
+      if (errorMessage.includes('already registered')) {
+        errorMessage = 'This email is already registered. Please try logging in instead.';
+      } else if (errorMessage.includes('invalid email')) {
+        errorMessage = 'Please use a valid email address (e.g., yourname@gmail.com)';
+      } else if (errorMessage.includes('User already registered')) {
+        errorMessage = 'This email is already registered. Please log in.';
+      }
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,7 +84,7 @@ export default function Register() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative w-full max-w-md"
+        className="relative w-full max-w-4xl"
       >
         <GlassCard className="p-8">
           <div className="text-center mb-8">
@@ -48,72 +96,110 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
-                  placeholder="Enter your name"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
+                    placeholder="Enter your name"
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
+                    placeholder="your@email.com"
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
+                    placeholder="Create a password"
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
+                    placeholder="Confirm your password"
+                  />
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age Group</label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <select
+                    required
+                    value={formData.ageGroup}
+                    onChange={(e) => setFormData({ ...formData, ageGroup: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800 appearance-none cursor-pointer"
+                  >
+                    <option value="">Select your age group</option>
+                    <option value="elementary">Elementary (6-11)</option>
+                    <option value="middle">Middle School (12-14)</option>
+                    <option value="high">High School (15-18)</option>
+                    <option value="adult">Adult (18+)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Group Access Code</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    required
+                    value={formData.accessCode}
+                    onChange={(e) => setFormData({ ...formData, accessCode: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
+                    placeholder="Enter your access code"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
-                  placeholder="your@email.com"
-                />
+            {error && (
+              <div className="glass-strong border-2 border-red-400 rounded-xl p-3 text-center">
+                <p className="text-red-600 text-sm font-medium">{error}</p>
               </div>
-            </div>
+            )}
 
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Age Group</label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <select
-                  required
-                  value={formData.ageGroup}
-                  onChange={(e) => setFormData({ ...formData, ageGroup: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800 appearance-none cursor-pointer"
-                >
-                  <option value="">Select your age group</option>
-                  <option value="elementary">Elementary (6-11)</option>
-                  <option value="middle">Middle School (12-14)</option>
-                  <option value="high">High School (15-18)</option>
-                  <option value="adult">Adult (18+)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Group Access Code</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  required
-                  value={formData.accessCode}
-                  onChange={(e) => setFormData({ ...formData, accessCode: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 glass rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all outline-none text-gray-800"
-                  placeholder="Enter your access code"
-                />
-              </div>
-            </div>
-
-            <GradientButton type="submit" fullWidth className="mt-8">
-              Join the Academy
+            <GradientButton type="submit" fullWidth className="mt-8" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Join the Academy'}
             </GradientButton>
           </form>
 
