@@ -17,14 +17,14 @@ CREATE POLICY "Anyone can validate group codes" ON groups
 
 -- Insert dummy access codes
 INSERT INTO groups (code, name, description) VALUES
-  ('IGA2024', 'IGA Academy 2024', 'Main cohort for 2024'),
-  ('YOUTH2024', 'Youth Empowerment 2024', 'Youth-focused learning group'),
-  ('LEADERS24', 'Future Leaders Program', 'Leadership development cohort'),
-  ('ENTREPRE24', 'Young Entrepreneurs', 'Entrepreneurship track'),
-  ('TECH2024', 'Tech Innovators', 'Technology and innovation group'),
-  ('CREATORS24', 'Creative Minds', 'Arts and creativity cohort'),
-  ('SCHOLARS24', 'Academic Scholars', 'Academic excellence program'),
+  ('IGA2025', 'IGA Academy 2025', 'Main cohort for 2025'),
+  ('YOUTH2025', 'Youth Empowerment 2025', 'Youth-focused learning group'),
+  ('LEADERS25', 'Future Leaders Program', 'Leadership development cohort'),
+  ('ENTREPRE25', 'Young Entrepreneurs', 'Entrepreneurship track'),
+  ('TECH2025', 'Tech Innovators', 'Technology and innovation group'),
+  ('CREATORS25', 'Creative Minds', 'Arts and creativity cohort'),
+  ('SCHOLARS25', 'Academic Scholars', 'Academic excellence program'),
   ('CHANGEMAKERS', 'Community Changemakers', 'Community leadership group'),
-  ('DEMO2024', 'Demo Group', 'For testing and demonstrations'),
-  ('PILOT2024', 'Pilot Program', 'Pilot test group')
+  ('DEMO2025', 'Demo Group', 'For testing and demonstrations'),
+  ('PILOT2025', 'Pilot Program', 'Pilot test group')
 ON CONFLICT (code) DO NOTHING;

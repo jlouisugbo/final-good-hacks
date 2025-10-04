@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Learning from './pages/Learning';
 import Community from './pages/Community';
+import Resources from './pages/Resources';
 import Profile from './pages/Profile';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Community />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <Resources />
             </ProtectedRoute>
           }
         />

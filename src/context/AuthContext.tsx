@@ -71,40 +71,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name: string, groupCode: string) => {
-    try {
-      console.log('Starting signup process...');
+    console.log('Starting signup...', { email, groupCode });
 
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin + '/dashboard',
-          data: {
-            name,
-            group_code: groupCode,
-          }
-        },
-      });
+    // Validate access code
+    if (groupCode !== 'IGA2025') {
+      throw new Error('Invalid access code. Please use IGA2025');
+    }
 
-      console.log('Auth signup response:', { authData, authError });
-
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
+    // Create auth user with email confirmation disabled
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
       }
+    });
 
-      if (!authData.user) {
-        throw new Error('Failed to create user - no user returned');
+    console.log('Auth signup:', { authData, authError });
+
+    if (authError) {
+      if (authError.message.includes('already registered')) {
+        console.log('User exists, logging in...');
+        await login(email, password);
+        return;
       }
+      throw authError;
+    }
 
-      console.log('Auth user created:', authData.user.id);
+    if (!authData.user) {
+      throw new Error('No user returned from signup');
+    }
 
-      // Wait a bit for auth to fully process
-      await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('Auth user created, ID:', authData.user.id);
 
-      // Create user profile in the users table
-      const userProfile = {
+    // Wait a moment for auth to settle
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Create user profile
+    console.log('Creating user profile...');
+    const { data: profileData, error: profileError } = await supabase
+      .from('users')
+      .insert({
         id: authData.user.id,
         email,
         name,
@@ -118,45 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         modules_in_progress: [],
         show_on_leaderboard: true,
         email_notifications: true,
-      };
+      })
+      .select()
+      .single();
 
-      console.log('Creating user profile:', userProfile);
+    console.log('Profile creation result:', { profileData, profileError });
 
-      // Try to insert, but if user already exists, just fetch it
-      const { data: profileData, error: profileError } = await supabase
-        .from('users')
-        .upsert(userProfile, { onConflict: 'id' })
-        .select()
-        .single();
-
-      console.log('Profile upsert response:', { profileData, profileError });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-
-        // Check if it's just because the profile already exists
-        if (profileError.message.includes('duplicate') || profileError.code === '23505') {
-          console.log('Profile already exists, fetching existing profile...');
-          const { data: existingProfile } = await supabase
-            .from('users')
-            .select()
-            .eq('id', authData.user.id)
-            .single();
-
-          if (existingProfile) {
-            console.log('Successfully retrieved existing profile');
-            return; // Profile exists, we're good to go
-          }
-        }
-
-        throw new Error(`Failed to create user profile: ${profileError.message}. Please try logging in instead.`);
-      }
-
-      console.log('Signup completed successfully');
-    } catch (error) {
-      console.error('Signup error:', error);
-      throw error;
+    if (profileError && !profileError.message.includes('duplicate')) {
+      console.error('Profile creation failed:', profileError);
+      throw new Error(`Failed to create profile: ${profileError.message}`);
     }
+
+    console.log('Signup complete!');
   };
 
   const logout = async () => {

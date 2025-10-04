@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Users, User, Menu, X } from 'lucide-react';
+import { Home, BookOpen, Users, User, Menu, X, Heart } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps {
@@ -19,6 +19,7 @@ export default function Navbar({ user }: NavbarProps) {
         { name: 'Dashboard', path: '/dashboard', icon: Home },
         { name: 'Learning', path: '/learning', icon: BookOpen },
         { name: 'Community', path: '/community', icon: Users },
+        { name: 'Resources', path: '/resources', icon: Heart },
         { name: 'Profile', path: '/profile', icon: User },
       ]
     : [];
