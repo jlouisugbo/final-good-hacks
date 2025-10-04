@@ -4,15 +4,13 @@ import { Send, Smile } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import { useAuth } from '../context/AuthContext';
-import { communityService, PostWithUser } from '../services/communityService';
-import { leaderboardService } from '../services/leaderboardService';
-import { GroupLeaderboard } from '../types/database';
+import { HARDCODED_COMMUNITY_POSTS, HARDCODED_LEADERBOARD, CommunityPost, LeaderboardUser } from '../data/hardcodedData';
 
 export default function Community() {
   const { user, loading } = useAuth();
   const [newPost, setNewPost] = useState('');
-  const [communityPosts, setCommunityPosts] = useState<PostWithUser[]>([]);
-  const [leaderboard, setLeaderboard] = useState<GroupLeaderboard[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
 
   const reactionOptions = [
     'You go girl! 💪',
@@ -28,62 +26,59 @@ export default function Community() {
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-
-      // Fetch posts
-      const posts = await communityService.getPosts();
-      setCommunityPosts(posts);
-
-      // Fetch leaderboard
-      const groupData = await leaderboardService.getGroupLeaderboard(user.group_code);
-      setLeaderboard(groupData);
-    };
-
-    fetchData();
-
-    // Subscribe to real-time updates
-    const unsubscribe = communityService.subscribeToPostUpdates((payload) => {
-      if (payload.eventType === 'INSERT') {
-        // Fetch the new post with user data
-        communityService.getPosts(50).then(setPommunityPosts);
-      } else if (payload.eventType === 'UPDATE') {
-        setCommunityPosts(prev =>
-          prev.map(post =>
-            post.id === payload.new.id ? { ...post, ...payload.new } : post
-          )
-        );
-      } else if (payload.eventType === 'DELETE') {
-        setCommunityPosts(prev => prev.filter(post => post.id !== payload.old.id));
-      }
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const handleSubmitPost = async () => {
-    if (!newPost.trim() || !user) return;
-
-    try {
-      await communityService.createPost(user.id, newPost);
-      setNewPost('');
-      // The real-time subscription will update the posts automatically
-    } catch (error) {
-      console.error('Error creating post:', error);
-    }
-  };
-
-  const handleReaction = async (postId: string, reaction: string) => {
     if (!user) return;
 
-    try {
-      await communityService.addReaction(postId, user.id, reaction);
-      // Refetch posts to get updated reactions
-      const posts = await communityService.getPosts();
-      setCommunityPosts(posts);
-    } catch (error) {
-      console.error('Error adding reaction:', error);
-    }
+    // Use hardcoded data - no database needed!
+    setCommunityPosts(HARDCODED_COMMUNITY_POSTS);
+    setLeaderboard(HARDCODED_LEADERBOARD);
+  }, [user]);
+
+  const handleSubmitPost = () => {
+    if (!newPost.trim() || !user) return;
+
+    // Create new post with local data
+    const newPostData: CommunityPost = {
+      id: `post-${Date.now()}`,
+      user_id: user.id,
+      content: newPost,
+      post_type: 'general',
+      reactions: {},
+      reaction_users: {},
+      comments: {},
+      created_at: new Date().toISOString(),
+      user: {
+        id: user.id,
+        name: user.name,
+        avatar_url: user.avatar_url || null,
+        current_level: user.current_level,
+        total_xp: user.total_xp,
+      },
+    };
+
+    // Add to the beginning of the posts array
+    setCommunityPosts([newPostData, ...communityPosts]);
+    setNewPost('');
+  };
+
+  const handleReaction = (postId: string, reaction: string) => {
+    if (!user) return;
+
+    // Update reactions in local state
+    setCommunityPosts(communityPosts.map(post => {
+      if (post.id !== postId) return post;
+
+      const currentReactions = (post.reactions as Record<string, number>) || {};
+      const newReactions = { ...currentReactions };
+
+      // Toggle reaction: if user already reacted with this, remove it; otherwise add it
+      const currentCount = newReactions[reaction] || 0;
+      newReactions[reaction] = currentCount + 1;
+
+      return {
+        ...post,
+        reactions: newReactions,
+      };
+    }));
   };
 
   const getTimeAgo = (timestamp: string) => {

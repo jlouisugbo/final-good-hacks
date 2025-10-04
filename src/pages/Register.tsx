@@ -20,6 +20,7 @@ export default function Register() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   // Redirect if already logged in (useEffect to avoid render issue)
   useEffect(() => {
@@ -226,10 +227,7 @@ export default function Register() {
               </div>
             </div>
             <button
-              onClick={() => {
-                loginDemo();
-                navigate('/dashboard');
-              }}
+              onClick={() => setShowDemoModal(true)}
               className="w-full py-3 glass-strong rounded-xl hover:scale-105 transition-transform font-semibold text-gray-700"
             >
               🎮 Try Demo Mode
@@ -256,6 +254,101 @@ export default function Register() {
               <h2 className="text-2xl font-bold mb-2 gradient-text">Welcome to IGA!</h2>
               <p className="text-gray-700 text-lg">Get ready to start your empowerment journey</p>
             </GlassCard>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showDemoModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 px-4"
+          onClick={() => setShowDemoModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', duration: 0.5 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl"
+          >
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30">
+              <h2 className="text-3xl font-bold mb-4 gradient-text text-center">Choose Demo Mode</h2>
+              <p className="text-gray-700 text-center mb-6 font-medium">Select how you'd like to explore IGA</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button
+                  onClick={() => {
+                    loginDemo('student');
+                    navigate('/dashboard');
+                  }}
+                  className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30 transition-all text-left group border-2 border-purple-200 hover:border-purple-400"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-4xl">👩🏽‍🎓</span>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 gradient-text text-center">Student</h3>
+                  <p className="text-gray-700 text-center mb-4 font-medium">Full access to all IGA features</p>
+                  <ul className="space-y-2 text-sm text-gray-800">
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">Learning modules & courses</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">Community & social features</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">Resources & support</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">Progress tracking & badges</span>
+                    </li>
+                  </ul>
+                </button>
+
+                <button
+                  onClick={() => {
+                    loginDemo('volunteer');
+                    navigate('/dashboard');
+                  }}
+                  className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30 transition-all text-left group border-2 border-blue-200 hover:border-blue-400"
+                >
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-4xl">👩🏽‍💼</span>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 gradient-text text-center">Volunteer</h3>
+                  <p className="text-gray-700 text-center mb-4 font-medium">Dashboard-only access for mentors</p>
+                  <ul className="space-y-2 text-sm text-gray-800">
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">View dashboard & analytics</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-green-600 font-bold text-base">✓</span>
+                      <span className="font-medium">Monitor student progress</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-gray-400 font-bold text-base">✗</span>
+                      <span className="text-gray-600">Learning modules (student only)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-gray-400 font-bold text-base">✗</span>
+                      <span className="text-gray-600">Community features (student only)</span>
+                    </li>
+                  </ul>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowDemoModal(false)}
+                className="mt-6 w-full py-3 bg-white/60 backdrop-blur-sm rounded-xl hover:scale-105 hover:bg-white/80 transition-all font-semibold text-gray-800 border border-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}

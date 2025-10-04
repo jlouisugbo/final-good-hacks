@@ -7,6 +7,7 @@ interface GradientButtonProps {
   fullWidth?: boolean;
   className?: string;
   type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
 }
 
 export default function GradientButton({
@@ -16,6 +17,7 @@ export default function GradientButton({
   fullWidth = false,
   className = '',
   type = 'button',
+  disabled = false,
 }: GradientButtonProps) {
   const variants = {
     primary: 'gradient-button hover:shadow-2xl hover:shadow-fuchsia-500/50',
@@ -27,9 +29,10 @@ export default function GradientButton({
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`${variants[variant]} text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 hover:scale-105 ${
         fullWidth ? 'w-full' : ''
-      } ${className}`}
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
     >
       {children}
     </button>

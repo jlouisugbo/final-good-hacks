@@ -8,20 +8,25 @@ interface NavbarProps {
     level: number;
     avatar?: string;
   };
+  userType?: 'student' | 'volunteer' | null;
 }
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user, userType }: NavbarProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const allNavItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: Home, allowedFor: ['student', 'volunteer'] },
+    { name: 'Learning', path: '/learning', icon: BookOpen, allowedFor: ['student'] },
+    { name: 'Community', path: '/community', icon: Users, allowedFor: ['student'] },
+    { name: 'Resources', path: '/resources', icon: Heart, allowedFor: ['student'] },
+    { name: 'Profile', path: '/profile', icon: User, allowedFor: ['student'] },
+  ];
+
   const navItems = user
-    ? [
-        { name: 'Dashboard', path: '/dashboard', icon: Home },
-        { name: 'Learning', path: '/learning', icon: BookOpen },
-        { name: 'Community', path: '/community', icon: Users },
-        { name: 'Resources', path: '/resources', icon: Heart },
-        { name: 'Profile', path: '/profile', icon: User },
-      ]
+    ? allNavItems.filter(item =>
+        !userType || item.allowedFor.includes(userType)
+      )
     : [];
 
   const isActive = (path: string) => location.pathname === path;

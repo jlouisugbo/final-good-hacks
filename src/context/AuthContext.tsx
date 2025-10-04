@@ -7,10 +7,11 @@ interface AuthContextType {
   user: User | null;
   supabaseUser: SupabaseUser | null;
   loading: boolean;
+  userType: 'student' | 'volunteer' | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signUp: (email: string, password: string, name: string, groupCode: string) => Promise<void>;
-  loginDemo: () => void;
+  loginDemo: (type: 'student' | 'volunteer') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userType, setUserType] = useState<'student' | 'volunteer' | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -72,72 +74,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name: string, groupCode: string) => {
-    console.log('Starting signup...', { email, groupCode });
-
     // Validate access code
     if (groupCode !== 'IGA2025') {
       throw new Error('Invalid access code. Please use IGA2025');
     }
 
-    // Create auth user with email confirmation disabled
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Sign up the user
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        data: {
+          name,
+          group_code: groupCode,
+        }
       }
     });
 
-    console.log('Auth signup:', { authData, authError });
-
-    if (authError) {
-      if (authError.message.includes('already registered')) {
-        console.log('User exists, logging in...');
-        await login(email, password);
-        return;
-      }
-      throw authError;
+    if (error) {
+      throw new Error('This email is already registered. Please use a different email or use Demo Mode.');
     }
 
-    if (!authData.user) {
-      throw new Error('No user returned from signup');
+    if (!data.user) {
+      throw new Error('Signup failed. Please try again or use Demo Mode.');
     }
 
-    console.log('Auth user created, ID:', authData.user.id);
-
-    // Wait a moment for auth to settle
+    // Wait for auth to process
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Create user profile
-    console.log('Creating user profile...');
-    const { data: profileData, error: profileError } = await supabase
-      .from('users')
-      .insert({
-        id: authData.user.id,
-        email,
-        name,
-        group_code: groupCode,
-        total_xp: 0,
-        current_level: 1,
-        current_streak: 0,
-        longest_streak: 0,
-        badges_earned: [],
-        completed_modules: [],
-        modules_in_progress: [],
-        show_on_leaderboard: true,
-        email_notifications: true,
-      })
-      .select()
-      .single();
-
-    console.log('Profile creation result:', { profileData, profileError });
+    const { error: profileError } = await supabase.from('users').insert({
+      id: data.user.id,
+      email,
+      name,
+      group_code: groupCode,
+      total_xp: 0,
+      current_level: 1,
+      current_streak: 0,
+      longest_streak: 0,
+      badges_earned: [],
+      completed_modules: [],
+      modules_in_progress: [],
+      show_on_leaderboard: true,
+      email_notifications: true,
+    });
 
     if (profileError && !profileError.message.includes('duplicate')) {
-      console.error('Profile creation failed:', profileError);
-      throw new Error(`Failed to create profile: ${profileError.message}`);
+      throw new Error(`Profile creation failed: ${profileError.message}. Please use Demo Mode.`);
     }
-
-    console.log('Signup complete!');
   };
 
   const logout = async () => {
@@ -145,32 +129,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
     setUser(null);
     setSupabaseUser(null);
+    setUserType(null);
   };
 
-  const loginDemo = () => {
+  const loginDemo = (type: 'student' | 'volunteer') => {
     const demoUser: User = {
-      id: 'demo-user-123',
-      email: 'demo@iga.com',
-      name: 'Demo User',
+      id: `demo-${type}-123`,
+      email: `demo.${type}@iga.com`,
+      name: type === 'student' ? 'Demo Student' : 'Demo Volunteer',
       group_code: 'IGA2025',
-      total_xp: 1250,
-      current_level: 5,
-      current_streak: 7,
-      longest_streak: 14,
-      badges_earned: ['first-login', 'week-streak', 'module-master'],
-      completed_modules: ['intro-101', 'leadership-201', 'finance-101'],
-      modules_in_progress: ['entrepreneurship-301'],
+      total_xp: type === 'student' ? 1250 : 450,
+      current_level: type === 'student' ? 5 : 2,
+      current_streak: type === 'student' ? 7 : 3,
+      longest_streak: type === 'student' ? 14 : 5,
+      badges_earned: type === 'student' ? ['1', '2', '3', '4', '5'] : ['1', '2'],
+      completed_modules: type === 'student' ? ['intro-101', 'leadership-201', 'finance-101'] : ['intro-101'],
+      modules_in_progress: type === 'student' ? ['entrepreneurship-301'] : [],
       show_on_leaderboard: true,
       email_notifications: true,
       created_at: new Date().toISOString(),
       last_login: new Date().toISOString(),
+      age_group: type === 'student' ? 'high' : 'adult',
+      program_type: type === 'student' ? 'NIA' : null,
+      current_module: type === 'student' ? 'entrepreneurship-301' : null,
+      avatar_url: null,
     };
     setUser(demoUser);
+    setUserType(type);
     setLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, supabaseUser, loading, login, logout, signUp, loginDemo }}>
+    <AuthContext.Provider value={{ user, supabaseUser, loading, userType, login, logout, signUp, loginDemo }}>
       {children}
     </AuthContext.Provider>
   );

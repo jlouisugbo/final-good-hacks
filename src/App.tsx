@@ -29,11 +29,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, userType } = useAuth();
 
   return (
     <>
-      <Navbar user={user || undefined} />
+      <Navbar user={user || undefined} userType={userType} />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
