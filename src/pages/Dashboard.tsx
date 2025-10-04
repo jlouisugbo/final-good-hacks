@@ -1,22 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, BookOpen, Send, Calendar as CalendarIcon, TrendingUp, Target } from 'lucide-react';
+import { Trophy, Flame, BookOpen, Calendar as CalendarIcon, TrendingUp, Target } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
-import GradientButton from '../components/GradientButton';
 import StatCard from '../components/StatCard';
 import ProgressBar from '../components/ProgressBar';
 import Calendar from '../components/Calendar';
+import ChatbotModal from '../components/ChatbotModal';
 import { useAuth } from '../context/AuthContext';
 import { eventService } from '../services/eventService';
 import { userService } from '../services/userService';
 import { Event } from '../types/database';
-
-const aiSuggestedQuestions = [
-  'How do I build confidence?',
-  'What is financial literacy?',
-  'How do I start a business?',
-  'Tell me about the Nguzo Saba',
-];
 
 const weeklyProgress = [
   { week: 'Week 1', modules: 2 },
@@ -28,10 +21,6 @@ const weeklyProgress = [
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([
-    { type: 'ai', message: `Hi ${user?.name || 'there'}! How can I help you today?` },
-  ]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,20 +36,6 @@ export default function Dashboard() {
 
     fetchData();
   }, [user]);
-
-  const handleSendMessage = () => {
-    if (!chatMessage.trim()) return;
-
-    setChatHistory([...chatHistory, { type: 'user', message: chatMessage }]);
-    setChatMessage('');
-
-    setTimeout(() => {
-      setChatHistory(prev => [...prev, {
-        type: 'ai',
-        message: 'Great question! Let me help you with that. Building confidence starts with small daily wins and celebrating your progress.'
-      }]);
-    }, 1000);
-  };
 
   const getTimeUntil = (dateString: string) => {
     const now = new Date();
@@ -221,7 +196,7 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Second Row: Analytics + Ask Nia */}
+        {/* Second Row: Analytics + Upcoming Events */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -286,73 +261,6 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <GlassCard className="h-full flex flex-col">
-              <div className="flex items-center space-x-2 mb-4">
-                <span className="text-2xl">🤖</span>
-                <h2 className="text-xl font-bold gradient-text">Ask Nia</h2>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-64">
-                {chatHistory.map((chat, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-2xl ${
-                        chat.type === 'user'
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                          : 'glass-strong text-gray-800'
-                      }`}
-                    >
-                      {chat.message}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <p className="text-xs text-gray-600 font-medium">Suggested questions:</p>
-                <div className="flex flex-wrap gap-2">
-                  {aiSuggestedQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setChatMessage(question)}
-                      className="glass-strong px-3 py-1 rounded-full text-xs hover:scale-105 transition-transform text-gray-700"
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask me anything..."
-                  className="flex-1 glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-400 transition-all outline-none text-gray-800"
-                />
-                <GradientButton
-                  onClick={handleSendMessage}
-                  className="!w-10 !h-10 !p-0 rounded-xl flex items-center justify-center"
-                >
-                  <Send className="text-white" size={18} />
-                </GradientButton>
-              </div>
-            </GlassCard>
-          </motion.div>
-        </div>
-
-        {/* Third Row: Upcoming Events + Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
             <GlassCard className="h-full">
               <div className="flex items-center space-x-2 mb-4">
                 <CalendarIcon className="text-iga-purple" size={24} />
@@ -392,24 +300,28 @@ export default function Dashboard() {
               </div>
             </GlassCard>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <GlassCard className="h-full">
-              <h2 className="text-xl font-bold mb-4 gradient-text">Quick Actions</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <StatCard icon={BookOpen} label="Continue Learning" value="3 modules" gradient="from-blue-500 to-purple-500" />
-                <StatCard icon={Target} label="Daily Goal" value="2/3" subValue="Complete 1 more" gradient="from-purple-500 to-fuchsia-500" />
-                <StatCard icon={Trophy} label="Next Badge" value="75%" subValue="Entrepreneur" gradient="from-fuchsia-500 to-pink-400" />
-                <StatCard icon={Flame} label="Streak Goal" value={`${user.longest_streak} days`} subValue={`${user.longest_streak - user.current_streak} more to beat record`} gradient="from-orange-400 to-red-500" />
-              </div>
-            </GlassCard>
-          </motion.div>
         </div>
+
+        {/* Third Row: Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <GlassCard>
+            <h2 className="text-xl font-bold mb-4 gradient-text">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard icon={BookOpen} label="Continue Learning" value="3 modules" gradient="from-blue-500 to-purple-500" />
+              <StatCard icon={Target} label="Daily Goal" value="2/3" subValue="Complete 1 more" gradient="from-purple-500 to-fuchsia-500" />
+              <StatCard icon={Trophy} label="Next Badge" value="75%" subValue="Entrepreneur" gradient="from-fuchsia-500 to-pink-400" />
+              <StatCard icon={Flame} label="Streak Goal" value={`${user.longest_streak} days`} subValue={`${user.longest_streak - user.current_streak} more to beat record`} gradient="from-orange-400 to-red-500" />
+            </div>
+          </GlassCard>
+        </motion.div>
       </div>
+
+      {/* Floating Chatbot */}
+      <ChatbotModal />
     </div>
   );
 }
